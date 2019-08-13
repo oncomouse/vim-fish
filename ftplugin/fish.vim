@@ -35,7 +35,7 @@ if executable('fish')
     if has('nvim')
       call jobstart("fish -c 'echo $fish_function_path'", { 'on_stdout': {j,d,e -> add(s:out, d) }, 'on_exit': {-> <SID>buf_handler(s:out)}})
     else
-      call job_start("fish -c 'echo $fish_function_path'", { 'out_mode': 'nl', 'on_stdout': {j,d,e -> add(s:out, d)}, 'exit_cb': {-> <SID>buf_handler(s:bufname)}})
+      call job_start("fish -c 'echo $fish_function_path'", { 'out_mode': 'nl', 'on_stdout': {j,d,e -> add(s:out, d)}, 'exit_cb': {-> <SID>buf_handler(s:out)}})
     endif
 else
     setlocal omnifunc=syntaxcomplete#Complete
