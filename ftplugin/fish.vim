@@ -17,21 +17,12 @@ if executable('fish_indent')
     setlocal formatexpr=fish#Format()
 endif
 
-function! s:buf_handler(bufnameOrOutput)
+function! s:buf_handler(output)
   let l:paths = []
-  if has('nvim')
-    if len(a:bufnameOrOutput) > 0
-      let l:paths = split(a:bufnameOrOutput[0][0])
-    else
-      let l:paths = []
-    endif
+  if len(a:output) > 0
+    let l:paths = split(a:output[0][0])
   else
-    let l:buflines = getbufline(bufnr(a:bufnameOrOutput), 1, '$')
-    try
-      execute('bdelete! '.bufnr(a:bufnameOrOutput))
-    catch
-    endtry
-    let l:paths = split(l:buflines)
+    let l:paths = []
   endif
   for l:path in l:paths
       execute 'setlocal path+='.l:path
@@ -40,12 +31,11 @@ endfunction
 
 if executable('fish')
     setlocal omnifunc=fish#Complete
+    let s:out = []
     if has('nvim')
-      let s:out = []
       call jobstart("fish -c 'echo $fish_function_path'", { 'on_stdout': {j,d,e -> add(s:out, d) }, 'on_exit': {-> <SID>buf_handler(s:out)}})
     else
-      let s:bufname = tempname()
-      call job_start("fish -c 'echo $fish_function_path'", { 'out_io': 'buffer', 'out_name': s:bufname, 'exit_cb': {-> <SID>buf_handler(s:bufname)}})
+      call job_start("fish -c 'echo $fish_function_path'", { 'out_mode': 'nl', 'on_stdout': {j,d,e -> add(s:out, d)}, 'exit_cb': {-> <SID>buf_handler(s:bufname)}})
     endif
 else
     setlocal omnifunc=syntaxcomplete#Complete
