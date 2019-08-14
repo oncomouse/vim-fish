@@ -34,8 +34,12 @@ if executable('fish')
     let s:out = []
     if has('nvim')
       call jobstart("fish -c 'echo $fish_function_path'", { 'on_stdout': {j,d,e -> add(s:out, d) }, 'on_exit': {-> <SID>buf_handler(s:out)}})
-    else
+    elseif !has('nvim') && has('job') && has('channel') && has('lambda')
       call job_start("fish -c 'echo $fish_function_path'", { 'out_mode': 'nl', 'on_stdout': {j,d,e -> add(s:out, d)}, 'exit_cb': {-> <SID>buf_handler(s:out)}})
+    else
+      for s:path in split(system("fish -c 'echo $fish_function_path'"))
+        execute 'setlocal path+='.s:path
+      endfor
     endif
 else
     setlocal omnifunc=syntaxcomplete#Complete
